@@ -15,3 +15,10 @@ if ENV["SMTP_URL"].to_s != ""
 end
 host = ENV["BLAZER_HOST"].to_s.empty? ? ENV["RAILWAY_PUBLIC_DOMAIN"] : ENV["BLAZER_HOST"]
 ActionMailer::Base.default_url_options = {host: host, protocol: "https"} if host.to_s != ""
+
+# The check scheduler, in the web server only (not in `rails runner` or migrations).
+if ENV["RAILWAY_CHECKS"] == "1"
+  Rails.application.config.after_initialize do
+    Thread.new { load "/app/railway/checks.rb" }
+  end
+end

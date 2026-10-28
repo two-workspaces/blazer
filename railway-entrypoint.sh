@@ -11,7 +11,5 @@ if [ -n "$BLAZER_SEED" ] && [ -f "railway/$BLAZER_SEED.rb" ]; then
   rails runner "exit 1 if Blazer::Query.exists?" 2>/dev/null && rails runner "railway/$BLAZER_SEED.rb"
 fi
 
-# Checks run beside the web server; a failed run is logged and retried on schedule.
-rails runner railway/checks.rb &
-# [::] takes IPv4 too.
-BIND="tcp://[::]:${PORT:-8080}" exec puma -C config/puma.rb
+# [::] takes IPv4 too. RAILWAY_CHECKS starts the check scheduler inside the server.
+BIND="tcp://[::]:${PORT:-8080}" RAILWAY_CHECKS=1 exec puma -C config/puma.rb
