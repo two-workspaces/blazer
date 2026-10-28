@@ -5,6 +5,7 @@
 sources = {}
 ENV.sort.each do |key, url|
   next unless key =~ /\ABLAZER_DATABASE_URL(?:_(\w+))?\z/ && !url.to_s.empty?
+  name = $1 ? $1.downcase : "main"
   source = {"url" => url}
   if url =~ %r{\Aclickhouse(s?)://([^/]*)/?([^?]*)}
     source = {"adapter" => "clickhouse", "url" => "http#{$1}://#{$2}"}
@@ -12,7 +13,7 @@ ENV.sort.each do |key, url|
   end
   timeout = ENV["BLAZER_TIMEOUT"].to_s
   source["timeout"] = timeout.to_i unless timeout.empty? || timeout == "0"
-  sources[$1 ? $1.downcase : "main"] = source
+  sources[name] = source
 end
 # Without one, the Blazer database itself is "main", a place to try Blazer out.
 sources["main"] ||= {"url" => ENV["DATABASE_URL"]}
