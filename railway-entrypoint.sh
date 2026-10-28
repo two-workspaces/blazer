@@ -8,7 +8,9 @@ cd /app
 for i in $(seq 30); do rails db:migrate 2>&1 && break; echo "railway: waiting for Postgres"; sleep 3; done
 # A seed adds ready-made queries and dashboards once, while Blazer has no queries.
 if [ -n "$BLAZER_SEED" ] && [ -f "railway/$BLAZER_SEED.rb" ]; then
-  rails runner "exit 1 if Blazer::Query.exists?" 2>/dev/null && rails runner "railway/$BLAZER_SEED.rb"
+  if rails runner "exit 1 if Blazer::Query.exists?" 2>/dev/null; then
+    rails runner "railway/$BLAZER_SEED.rb" || echo "railway: adding the $BLAZER_SEED dashboard failed, starting without it"
+  fi
 fi
 
 # [::] takes IPv4 too. RAILWAY_CHECKS starts the check scheduler inside the server.

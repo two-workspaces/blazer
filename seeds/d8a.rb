@@ -41,9 +41,12 @@ queries = [
   SQL
 ]
 
-dashboard = Blazer::Dashboard.create!(name: "Website analytics")
-queries.each_with_index do |(name, sql), i|
-  query = Blazer::Query.create!(name: name, statement: sql, data_source: "d8a", status: "active")
-  Blazer::DashboardQuery.create!(dashboard: dashboard, query: query, position: i)
+# All or nothing, so a failed run leaves nothing behind and the next boot retries.
+ActiveRecord::Base.transaction do
+  dashboard = Blazer::Dashboard.create!(name: "Website analytics")
+  queries.each_with_index do |(name, sql), i|
+    query = Blazer::Query.create!(name: name, statement: sql, data_source: "d8a")
+    Blazer::DashboardQuery.create!(dashboard: dashboard, query: query, position: i)
+  end
 end
 puts "railway: added the Website analytics dashboard (#{queries.size} queries on d8a)"
