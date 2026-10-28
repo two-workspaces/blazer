@@ -1,0 +1,8 @@
+{
+  "name": "Blazer | SQL Dashboards, Charts & Alerts for Your Database",
+  "short_name": "Blazer",
+  "description": "Blazer 3.5: SQL queries, charts, dashboards and alerts on your database",
+  "category": "Analytics",
+  "image": "https://raw.githubusercontent.com/ankane/blazer/master/app/assets/images/blazer/favicon.png",
+  "deploy_marker": "two-workspaces/blazer"
+}

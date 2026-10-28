@@ -1,0 +1,34 @@
+<%
+# Data sources come from variables, so adding a database is a Railway variable, not
+# a rebuild: BLAZER_DATABASE_URL is "main", BLAZER_DATABASE_URL_<NAME> adds <name>.
+# clickhouse:// and clickhouses:// URLs use Blazer's ClickHouse adapter (HTTP port).
+sources = {}
+ENV.sort.each do |key, url|
+  next unless key =~ /\ABLAZER_DATABASE_URL(?:_(\w+))?\z/ && !url.to_s.empty?
+  source = {"url" => url}
+  if url =~ %r{\Aclickhouse(s?)://([^/]*)/?([^?]*)}
+    source = {"adapter" => "clickhouse", "url" => "http#{$1}://#{$2}"}
+    source["database"] = $3 unless $3.empty?
+  end
+  timeout = ENV["BLAZER_TIMEOUT"].to_s
+  source["timeout"] = timeout.to_i unless timeout.empty? || timeout == "0"
+  sources[$1 ? $1.downcase : "main"] = source
+end
+# Without one, the Blazer database itself is "main", a place to try Blazer out.
+sources["main"] ||= {"url" => ENV["DATABASE_URL"]}
+
+config = {
+  "data_sources" => sources,
+  "audit" => true,
+  "time_zone" => ENV.fetch("BLAZER_TIME_ZONE", "Etc/UTC"),
+  "check_schedules" => ["1 day", "1 hour", "5 minutes"],
+  # Both run inside this service; "trend" and "prophet" would send data to trendapi.org
+  # or need extra packages.
+  "anomaly_checks" => "anomaly_detection",
+  "forecasting" => "prophet",
+}
+config["from_email"] = ENV["BLAZER_FROM_EMAIL"] if ENV["BLAZER_FROM_EMAIL"].to_s != ""
+config["slack_webhook_url"] = ENV["BLAZER_SLACK_WEBHOOK_URL"] if ENV["BLAZER_SLACK_WEBHOOK_URL"].to_s != ""
+config["mapbox_access_token"] = ENV["MAPBOX_ACCESS_TOKEN"] if ENV["MAPBOX_ACCESS_TOKEN"].to_s != ""
+%>
+<%= config.to_yaml %>

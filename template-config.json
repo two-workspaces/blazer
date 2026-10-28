@@ -1,0 +1,157 @@
+{
+  "services": {
+    "ef297d68-1d25-4822-91c1-61c1df46db97": {
+      "icon": "https://raw.githubusercontent.com/ankane/blazer/master/app/assets/images/blazer/favicon.png",
+      "name": "Blazer",
+      "build": {
+        "dockerfilePath": "Dockerfile"
+      },
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": "/health",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "repo": "https://github.com/two-workspaces/blazer",
+        "rootDirectory": "/"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "8080",
+          "description": "Port Blazer listens on - leave as is",
+          "isOptional": false
+        },
+        "BLAZER_USERNAME": {
+          "defaultValue": "admin",
+          "description": "Sign-in name (HTTP basic auth)",
+          "isOptional": false
+        },
+        "BLAZER_PASSWORD": {
+          "defaultValue": "${{secret(20)}}",
+          "description": "Sign-in password (HTTP basic auth)",
+          "isOptional": false
+        },
+        "BLAZER_DATABASE_URL": {
+          "defaultValue": "",
+          "description": "The database to query, e.g. ${{Postgres.DATABASE_URL}} of your app. Empty = Blazer's own database. Add more as BLAZER_DATABASE_URL_<NAME>",
+          "isOptional": true
+        },
+        "BLAZER_TIME_ZONE": {
+          "defaultValue": "Etc/UTC",
+          "description": "Time zone for dates in results, e.g. Europe/Berlin",
+          "isOptional": true
+        },
+        "SMTP_URL": {
+          "defaultValue": "",
+          "description": "For check emails: smtp://user:password@host:587 (outbound SMTP needs Railway Pro)",
+          "isOptional": true
+        },
+        "BLAZER_FROM_EMAIL": {
+          "defaultValue": "",
+          "description": "Sender address for check emails",
+          "isOptional": true
+        },
+        "BLAZER_SLACK_WEBHOOK_URL": {
+          "defaultValue": "",
+          "description": "Slack incoming webhook for check alerts",
+          "isOptional": true
+        },
+        "DATABASE_URL": {
+          "defaultValue": "${{Postgres.DATABASE_URL}}",
+          "description": "Blazer's own database (queries, dashboards, checks) - leave as is",
+          "isOptional": false
+        },
+        "SECRET_KEY_BASE": {
+          "defaultValue": "${{secret(64)}}",
+          "description": "Rails secret - leave as is",
+          "isOptional": false
+        }
+      },
+      "networking": {
+        "serviceDomains": {
+          "<hasDomain>": {}
+        }
+      }
+    },
+    "dd130352-6b5e-4a70-a8cb-10df2f86ecdd": {
+      "icon": "https://devicons.railway.com/i/postgresql.svg",
+      "name": "Postgres",
+      "build": {},
+      "deploy": {
+        "requiredMountPath": "/var/lib/postgresql/data"
+      },
+      "source": {
+        "image": "ghcr.io/railwayapp-templates/postgres-ssl:17"
+      },
+      "variables": {
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Location where the database will be initialized",
+          "isOptional": false
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway Private Domain Name.",
+          "isOptional": false
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Port to connect to Postgres.",
+          "isOptional": false
+        },
+        "PGUSER": {
+          "defaultValue": "${{ POSTGRES_USER }}",
+          "description": "Required variable for Data panel",
+          "isOptional": false
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Required variable for the data panel.",
+          "isOptional": false
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Required variable for Data panel",
+          "isOptional": false
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "blazer",
+          "description": "Default database created when image is started.",
+          "isOptional": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "URL to connect to Postgres database.",
+          "isOptional": false
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "User to connect to Postgres DB",
+          "isOptional": false
+        },
+        "SSL_CERT_DAYS": {
+          "defaultValue": "820",
+          "description": "SSL certificate expiry in days.",
+          "isOptional": true
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Password to connect to DB",
+          "isOptional": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow Postgres to cleanly shut down",
+          "isOptional": false
+        }
+      },
+      "networking": {},
+      "volumeMounts": {
+        "dd130352-6b5e-4a70-a8cb-10df2f86ecdd": {
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      }
+    }
+  }
+}
